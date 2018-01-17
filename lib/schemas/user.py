@@ -1,16 +1,22 @@
 import graphene
 
 import lib.schemas.article
+import lib.loader.article
+from lib.loader.article_ids_of_user import article_ids_of_user_loader
 
 
 class User(graphene.ObjectType):
     id = graphene.Int()
     google_id = graphene.String()
-    name = graphene.String()
-    articles = graphene.List(of_type=lib.schemas.article.Article)
+    email = graphene.String()
+    username = graphene.String()
+    is_admin = graphene.Boolean()
+    faction = graphene.Int()
+    created_at = graphene.String()
+    articles = graphene.List(lambda: lib.schemas.article.Article)
 
-    def resolve_articles(self, info):
-        return [
-            lib.schemas.article.Article(id=1, title='Test Article 1'),
-            lib.schemas.article.Article(id=2, title='Test Article 2')
-        ]
+    async def resolve_articles(self, info):
+        article_ids = await article_ids_of_user_loader.load(self.id)
+        articles = await lib.loader.article.article_loader.load_many(article_ids)
+        lib.loader.article.filter_article_fields(articles, info.context)
+        return articles
