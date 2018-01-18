@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from graphene import Schema
 from graphql.execution.executors.asyncio import AsyncioExecutor
 
@@ -16,9 +16,10 @@ app = Flask(__name__)
 
 
 @app.after_request
-def apply_caching(response):
+def cors(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Headers'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = request.headers.get('Access-Control-Request-Methods')
+    response.headers['Access-Control-Allow-Headers'] = request.headers.get('Access-Control-Request-Headers')
     return response
 
 
