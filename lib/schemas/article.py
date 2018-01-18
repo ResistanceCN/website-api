@@ -8,6 +8,7 @@ class Article(graphene.ObjectType):
     id = graphene.Int()
     author_id = graphene.Int()
     author = graphene.Field(lambda: lib.schemas.user.User)
+    tags = graphene.List(graphene.String)
     title = graphene.String()
     content = graphene.String()
     created_at = graphene.String()

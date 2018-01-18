@@ -1,3 +1,4 @@
+import json
 from promise import Promise
 
 from .loader import Loader
@@ -8,7 +9,7 @@ import lib.schemas.article
 def _get_article(article_id):
     try:
         cur = db_cursor()
-        cur.execute('SELECT author_id, title, content, created_at, updated_at, published_at '
+        cur.execute('SELECT author_id, title, content, tags, created_at, updated_at, published_at '
                     'FROM articles WHERE id=%s', (article_id,))
         result = cur.fetchone()
         cur.close()
@@ -18,10 +19,14 @@ def _get_article(article_id):
             author_id=result[0],
             title=result[1],
             content=result[2],
-            created_at=str(result[3]),
-            updated_at=str(result[4]),
-            published_at=str(result[5]),
+            tags=result[3],
+            created_at=str(result[4]),
+            updated_at=str(result[5]),
+            published_at=str(result[6]),
         )
+
+        if not isinstance(article.tags, list):
+            article.tags = []
 
         return article
     except Exception:
@@ -41,4 +46,4 @@ class ArticleLoader(Loader):
         return Promise.resolve([_get_article(key) for key in keys])
 
 
-article_loader = ArticleLoader()
+article_loader = ArticleLoader(timeout=300)

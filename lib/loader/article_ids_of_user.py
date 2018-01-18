@@ -23,4 +23,4 @@ class ArticleIdsOfUserLoader(Loader):
         return Promise.resolve([_get_article_ids(key) for key in keys])
 
 
-article_ids_of_user_loader = ArticleIdsOfUserLoader()
+article_ids_of_user_loader = ArticleIdsOfUserLoader(timeout=300)
