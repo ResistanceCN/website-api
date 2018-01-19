@@ -1,13 +1,7 @@
 import psycopg2
 
 import config
-import logging
 
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO)
-
-logger = logging.getLogger(__name__)
 
 def _make_connection():
     return psycopg2.connect(
@@ -20,12 +14,18 @@ def _make_connection():
 
 
 def db_cursor():
+    global _conn, _test_cursor
+
     try:
         # PING
-        _conn = _make_connection()
-        _conn.cursor.execute('SELECT 1')
+        _test_cursor.execute('SELECT 1')
     except psycopg2.OperationalError:
-        logger.info("Failed to connect database.")
-
+        # Reconnect
+        _conn = _make_connection()
+        _test_cursor = _conn.cursor()
 
     return _conn.cursor()
+
+
+_conn = _make_connection()
+_test_cursor = _conn.cursor()
