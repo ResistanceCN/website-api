@@ -1,4 +1,3 @@
-import json
 import graphene
 
 from lib.db import db_cursor

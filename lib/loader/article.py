@@ -1,4 +1,3 @@
-import json
 from promise import Promise
 
 from .loader import Loader

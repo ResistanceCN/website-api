@@ -1,3 +1,4 @@
+import logging
 from flask import Flask, request
 from graphene import Schema
 from graphql.execution.executors.asyncio import AsyncioExecutor
@@ -11,6 +12,13 @@ if config.DEBUG:
     print('+------------------------------------------------------+')
     print('| WARNING: DEBUG MODE IS ON. TURN IT OFF IN PRODUCTION |')
     print('+------------------------------------------------------+')
+
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
