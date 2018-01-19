@@ -20,7 +20,11 @@ class User(graphene.ObjectType):
         articles = await lib.loader.article.article_loader.load_many(article_ids)
 
         if info.context.user.id != self.id:
-            articles = [article for article in articles if article.published_at is not None]
+            articles_tmp = []
+            for article in articles:
+                if article.published_at is not None:
+                    articles_tmp.append(article)
+            articles = articles_tmp
 
         lib.loader.article.filter_article_fields(articles, info.context)
         return articles
