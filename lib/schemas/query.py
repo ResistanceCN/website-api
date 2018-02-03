@@ -1,3 +1,4 @@
+from flask import abort
 import graphene
 
 from lib.db import db_cursor
@@ -12,6 +13,7 @@ class Query(graphene.ObjectType):
     hello = graphene.String(
         name=graphene.String(default_value="world"),
     )
+    me = graphene.Field(User)
     user_by_id = graphene.Field(
         type=User,
         id=graphene.Int(),
@@ -30,6 +32,15 @@ class Query(graphene.ObjectType):
     def resolve_hello(self, info, name):
         print(info.context)
         return 'Hello ' + name
+
+    async def resolve_me(self, info):
+        user_id = info.context.user.id
+        if user_id == 0:
+            abort(401)
+
+        user = await user_loader.load(user_id)
+        filter_user_fields(user, info.context)
+        return user
 
     async def resolve_user_by_id(self, info, id):
         user = await user_loader.load(id)

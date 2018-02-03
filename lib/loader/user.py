@@ -8,7 +8,7 @@ import lib.schemas.user
 def _get_user(user_id):
     try:
         cur = db_cursor()
-        cur.execute('SELECT google_id, email, is_admin, username, faction, created_at '
+        cur.execute('SELECT google_id, email, is_admin, name, faction, created_at '
                     'FROM users WHERE id=%s', (user_id,))
         result = cur.fetchone()
         cur.close()
@@ -18,7 +18,7 @@ def _get_user(user_id):
             google_id=result[0],
             email=result[1],
             is_admin=result[2],
-            username=result[3],
+            name=result[3],
             faction=result[4],
             created_at=str(result[5]),
         )

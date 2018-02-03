@@ -12,7 +12,7 @@ from lib.redis import redis
 
 
 def auth():
-    token = request.form['google_token']
+    token = request.args['google_token']
 
     try:
         id_info = id_token.verify_oauth2_token(token, requests.Request(), config.GOOGLE_CLIENT_ID)
@@ -26,15 +26,20 @@ def auth():
         cur.execute('SELECT id, faction, is_admin FROM users WHERE google_id=%s;', (google_id,))
         data = cur.fetchone()
 
+        if data is None:
+            return '{"register":true}'
+
         user_info = StdClass(
             id=data[0],
             faction=Faction(data[1]),
             is_admin=data[2],
         )
-        token = str(uuid.uuid4())
 
-        redis.set(token, pickle.dumps(user_info), nx=True)
-        # redis.set(token, pickle.dumps(user_info), nx=True, ex=86400)
+        while True:
+            token = str(uuid.uuid4())
+            if redis.set(token, pickle.dumps(user_info), nx=True):
+                break
+            # redis.set(token, pickle.dumps(user_info), nx=True, ex=86400)
 
         return '{"token":"' + token + '"}'
     except Exception:

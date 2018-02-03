@@ -9,7 +9,7 @@ class User(graphene.ObjectType):
     id = graphene.Int()
     google_id = graphene.String()
     email = graphene.String()
-    username = graphene.String()
+    name = graphene.String()
     is_admin = graphene.Boolean()
     faction = graphene.Int()
     created_at = graphene.String()

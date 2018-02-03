@@ -21,7 +21,7 @@ class Context(StdClass):
 
     def get_user_info(self):
         try:
-            token = self.request.headers.get['Token']
+            token = self.request.headers['Token']
             self.user = pickle.loads(redis.get(token))
         except Exception as e:
             pass
