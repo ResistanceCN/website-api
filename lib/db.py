@@ -1,31 +1,26 @@
-import psycopg2
-
+from pymongo import MongoClient
 import config
+import __main__
 
 
-def _make_connection():
-    return psycopg2.connect(
-        host=config.POSTGRES_HOST,
-        port=config.POSTGRES_PORT,
-        dbname=config.POSTGRES_DBNAME,
-        user=config.POSTGRES_USER,
-        password=config.POSTGRES_PASSWORD
+def connect():
+    """Define client."""
+    client = MongoClient(
+        host=config.DB_HOST,
+        port=config.DB_PORT
     )
+    return client
 
 
 def db_cursor():
-    global _conn, _test_cursor
-
+    """Get database cursor."""
     try:
-        # PING
-        _test_cursor.execute('SELECT 1')
-    except psycopg2.OperationalError:
-        # Reconnect
-        _conn = _make_connection()
-        _test_cursor = _conn.cursor()
-
-    return _conn.cursor()
+        db_cursor = client[config.DB_NAME]
+        db_cursor['user'].find_one()
+    except ConnectionError:
+        __main__.logger.info("Failed to connecting MongoDB. HOST: %s, DB: %s" %
+                             (config.DB_HOST + config.DB_PORT, config.DB_NAME))
+    return db_cursor
 
 
-_conn = _make_connection()
-_test_cursor = _conn.cursor()
+client = connect()

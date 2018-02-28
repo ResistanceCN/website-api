@@ -52,34 +52,28 @@ class Query(graphene.ObjectType):
         filter_article_fields(article, info.context)
         return article
 
-    def resolve_article_count(self, info):
+    def resolve_article_count(self):
         cur = db_cursor()
-        cur.execute('select count(published_at) from articles')
-        result = cur.fetchone()
+        result = cur['articles'].count({'published_at': {'$exists': True}})
         cur.close()
-
-        return result[0]
+        return result
 
     def resolve_latest_articles(self, info, count, offset):
         articles = []
-
         cur = db_cursor()
-        cur.execute('SELECT id, author_id, title, content, tags, created_at, updated_at, published_at '
-                    'FROM articles WHERE published_at IS NOT NULL '
-                    'ORDER BY id DESC LIMIT %s OFFSET %s', (count, offset))
-        results = cur.fetchall()
+        results = cur['articles'].find({'published_at': {'$exists': True}}).sort({'id': -1}).skip(count).limit(offset)
         cur.close()
 
         for result in results:
             article = Article(
-                id=result[0],
-                author_id=result[1],
-                title=result[2],
-                content=result[3],
-                tags=result[4],
-                created_at=str(result[5]),
-                updated_at=str(result[6]),
-                published_at=str(result[7]),
+                id=result['id'],
+                author_id=result['author_id'],
+                title=result['title'],
+                content=result['content'],
+                tags=result['tags'],
+                created_at=str(result['created_at']),
+                updated_at=str(result['updated_at']),
+                published_at=str(result['published_at']),
             )
 
             if not isinstance(article.tags, list):
