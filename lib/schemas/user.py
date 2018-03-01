@@ -2,7 +2,6 @@ import graphene
 
 import lib.schemas.article
 import lib.loader.article
-from lib.loader.article_ids_of_user import article_ids_of_user_loader
 
 
 class User(graphene.ObjectType):
@@ -16,8 +15,7 @@ class User(graphene.ObjectType):
     articles = graphene.List(lambda: lib.schemas.article.Article)
 
     async def resolve_articles(self, info):
-        article_ids = await article_ids_of_user_loader.load(self.id)
-        articles = await lib.loader.article.article_loader.load_many(article_ids)
+        articles = await info.context.loaders.user_articles.load(self.id)
 
         if info.context.user.id != self.id:
             articles = [article for article in articles if article.published_at is not None]

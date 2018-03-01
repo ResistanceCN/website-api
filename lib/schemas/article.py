@@ -16,6 +16,6 @@ class Article(graphene.ObjectType):
     published_at = graphene.String()
 
     async def resolve_author(self, info):
-        author = await lib.loader.user.user_loader.load(self.author_id)
+        author = await info.context.loaders.user.load(self.author_id)
         lib.loader.user.filter_user_fields(author, info.context)
         return author

@@ -1,9 +1,9 @@
 from flask import abort
 import graphene
 
-from lib.db import db_cursor
-from lib.loader.user import user_loader, filter_user_fields
-from lib.loader.article import article_loader, filter_article_fields
+from lib.helper import nstr
+from lib.mongo import db
+from lib.loader.user import filter_user_fields
 from lib.loader.article import filter_article_fields
 from .user import User
 from .article import Article
@@ -35,55 +35,43 @@ class Query(graphene.ObjectType):
 
     async def resolve_me(self, info):
         user_id = info.context.user.id
-        if user_id == 0:
+
+        user = await info.context.loaders.user.load(user_id)
+        if user is None:
             abort(401)
 
-        user = await user_loader.load(user_id)
         filter_user_fields(user, info.context)
         return user
 
     async def resolve_user_by_id(self, info, id):
-        user = await user_loader.load(id)
+        user = await info.context.loaders.user.load(id)
         filter_user_fields(user, info.context)
         return user
 
     async def resolve_article_by_id(self, info, id):
-        article = await article_loader.load(id)
+        article = await info.context.loaders.article.load(id)
         filter_article_fields(article, info.context)
         return article
 
     def resolve_article_count(self, info):
-        cur = db_cursor()
-        cur.execute('select count(published_at) from articles')
-        result = cur.fetchone()
-        cur.close()
-
-        return result[0]
+        return db().articles.count()
 
     def resolve_latest_articles(self, info, count, offset):
         articles = []
 
-        cur = db_cursor()
-        cur.execute('SELECT id, author_id, title, content, tags, created_at, updated_at, published_at '
-                    'FROM articles WHERE published_at IS NOT NULL '
-                    'ORDER BY id DESC LIMIT %s OFFSET %s', (count, offset))
-        results = cur.fetchall()
-        cur.close()
+        results = db().articles.find().skip(offset).limit(count)
 
         for result in results:
             article = Article(
-                id=result[0],
-                author_id=result[1],
-                title=result[2],
-                content=result[3],
-                tags=result[4],
-                created_at=str(result[5]),
-                updated_at=str(result[6]),
-                published_at=str(result[7]),
+                id=result['_id'],
+                author_id=result['author_id'],
+                title=result['title'],
+                content=result['content'],
+                tags=result.get('tags', []),
+                created_at=str(result['created_at']),
+                updated_at=str(result['updated_at']),
+                published_at=nstr(result.get('published_at')),
             )
-
-            if not isinstance(article.tags, list):
-                article.tags = []
 
             filter_article_fields(article, info.context)
             articles.append(article)

@@ -1,14 +1,12 @@
 from flask import request, abort
 from google.oauth2 import id_token
 from google.auth.transport import requests
-import pickle
-import uuid
+from pymongo.errors import DuplicateKeyError
+from uuid import uuid4
+from time import time
 
 import config
-from lib.stdclass import StdClass
-from lib.definition import Faction
-from lib.db import db_cursor
-from lib.redis import redis
+from lib.mongo import db
 
 
 def auth():
@@ -22,25 +20,23 @@ def auth():
 
         google_id = id_info['sub']
 
-        cur = db_cursor()
-        cur.execute('SELECT id, faction, is_admin FROM users WHERE google_id=%s;', (google_id,))
-        data = cur.fetchone()
-
-        if data is None:
+        user = db().users.find_one({'google_id': google_id})
+        if user is None:
             return '{"register":true}'
 
-        user_info = StdClass(
-            id=data[0],
-            faction=Faction(data[1]),
-            is_admin=data[2],
-        )
+        for i in range(5):
+            token = str(uuid4())
+            try:
+                db().sessions.insert({
+                    'user_id': user['_id'],
+                    'token': token,
+                    'expire': time() + 604800
+                })
 
-        while True:
-            token = str(uuid.uuid4())
-            if redis.set(token, pickle.dumps(user_info), nx=True):
-                break
-            # redis.set(token, pickle.dumps(user_info), nx=True, ex=86400)
+                return '{"token":"' + token + '"}'
+            except DuplicateKeyError:
+                pass
 
-        return '{"token":"' + token + '"}'
+        raise ValueError("You've hit the jackpot!")
     except Exception:
         abort(401)

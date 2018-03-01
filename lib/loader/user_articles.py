@@ -6,19 +6,14 @@ from lib.mongo import db
 import lib.schemas.article
 
 
-def filter_article_fields(article, context):
-    if isinstance(article, list):
-        for i in article:
-            filter_article_fields(i, context)
-    else:
-        pass
-
-
-class ArticleLoader(DataLoader):
+class UserArticlesLoader(DataLoader):
     def batch_load_fn(self, keys):
         articles = {}
-        for result in db().articles.find({'_id': {'$in': keys}}):
-            articles[result['_id']] = lib.schemas.article.Article(
+        for key in keys:
+            articles[key] = []
+
+        for result in db().articles.find({'author_id': {'$in': keys}}):
+            articles[result['author_id']].append(lib.schemas.article.Article(
                 id=result['_id'],
                 author_id=result['author_id'],
                 title=result['title'],
@@ -27,6 +22,6 @@ class ArticleLoader(DataLoader):
                 created_at=str(result['created_at']),
                 updated_at=str(result['updated_at']),
                 published_at=nstr(result.get('published_at')),
-            )
+            ))
 
-        return Promise.resolve([articles.get(key) for key in keys])
+        return Promise.resolve([articles[key] for key in keys])
