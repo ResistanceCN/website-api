@@ -1,5 +1,6 @@
 from promise import Promise
 from promise.dataloader import DataLoader
+from bson.objectid import ObjectId
 
 from lib.helper import nstr
 from lib.mongo import db
@@ -8,6 +9,8 @@ import lib.schemas.article
 
 class UserArticlesLoader(DataLoader):
     def batch_load_fn(self, keys):
+        keys = [ObjectId(k) for k in keys]
+
         articles = {}
         for key in keys:
             articles[key] = []

@@ -5,7 +5,7 @@ import lib.loader.article
 
 
 class User(graphene.ObjectType):
-    id = graphene.Int()
+    id = graphene.ID()
     google_id = graphene.String()
     email = graphene.String()
     name = graphene.String()

@@ -1,5 +1,6 @@
 from promise import Promise
 from promise.dataloader import DataLoader
+from bson.objectid import ObjectId
 
 from lib.helper import nstr
 from lib.mongo import db
@@ -7,6 +8,9 @@ import lib.schemas.user
 
 
 def filter_user_fields(user, context):
+    if user is None:
+        return
+
     if isinstance(user, list):
         for i in user:
             filter_user_fields(i, context)
@@ -21,6 +25,8 @@ def filter_user_fields(user, context):
 
 class UserLoader(DataLoader):
     def batch_load_fn(self, keys):
+        keys = [ObjectId(k) for k in keys]
+
         users = {}
         for result in db().users.find({'_id': {'$in': keys}}):
             users[result['_id']] = lib.schemas.user.User(

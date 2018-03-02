@@ -5,7 +5,7 @@ import lib.loader.user
 
 
 class Article(graphene.ObjectType):
-    id = graphene.Int()
+    id = graphene.ID()
     author_id = graphene.Int()
     author = graphene.Field(lambda: lib.schemas.user.User)
     tags = graphene.List(graphene.String)

@@ -1,5 +1,6 @@
 from promise import Promise
 from promise.dataloader import DataLoader
+from bson.objectid import ObjectId
 
 from lib.helper import nstr
 from lib.mongo import db
@@ -16,6 +17,8 @@ def filter_article_fields(article, context):
 
 class ArticleLoader(DataLoader):
     def batch_load_fn(self, keys):
+        keys = [ObjectId(k) for k in keys]
+
         articles = {}
         for result in db().articles.find({'_id': {'$in': keys}}):
             articles[result['_id']] = lib.schemas.article.Article(

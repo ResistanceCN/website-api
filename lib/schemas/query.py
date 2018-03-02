@@ -16,11 +16,11 @@ class Query(graphene.ObjectType):
     me = graphene.Field(User)
     user_by_id = graphene.Field(
         type=User,
-        id=graphene.Int(),
+        id=graphene.ID(),
     )
     article_by_id = graphene.Field(
         type=Article,
-        id=graphene.Int(),
+        id=graphene.ID(),
     )
     article_count = graphene.Int()
     latest_articles = graphene.Field(
