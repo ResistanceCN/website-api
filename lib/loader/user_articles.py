@@ -8,6 +8,9 @@ import lib.schemas.article
 
 
 class UserArticlesLoader(DataLoader):
+    def get_cache_key(self, key):
+        return ObjectId(key)
+
     def batch_load_fn(self, keys):
         keys = [ObjectId(k) for k in keys]
 

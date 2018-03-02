@@ -8,14 +8,19 @@ import lib.schemas.article
 
 
 def filter_article_fields(article, context):
+    if article is None:
+        return
+
     if isinstance(article, list):
         for i in article:
             filter_article_fields(i, context)
-    else:
-        pass
+        return
 
 
 class ArticleLoader(DataLoader):
+    def get_cache_key(self, key):
+        return ObjectId(key)
+
     def batch_load_fn(self, keys):
         keys = [ObjectId(k) for k in keys]
 

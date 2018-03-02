@@ -14,16 +14,20 @@ def filter_user_fields(user, context):
     if isinstance(user, list):
         for i in user:
             filter_user_fields(i, context)
-    else:
-        if not context.user.is_admin:
-            user.google_id = None
-            user.is_admin = None
+        return
 
-        if id != context.user.id:
-            user.email = None
+    if not context.user.is_admin:
+        user.google_id = None
+        user.is_admin = None
+
+    if id != context.user.id:
+        user.email = None
 
 
 class UserLoader(DataLoader):
+    def get_cache_key(self, key):
+        return ObjectId(key)
+
     def batch_load_fn(self, keys):
         keys = [ObjectId(k) for k in keys]
 
