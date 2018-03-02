@@ -1,4 +1,4 @@
-from pymongo import MongoClient, ASCENDING
+from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
 import config

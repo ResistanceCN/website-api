@@ -4,7 +4,9 @@ from flask_graphql import GraphQLView
 from lib.stdclass import StdClass
 from lib.definition import Faction
 from lib.mongo import db
-from lib.loader.loaders import Loaders
+from lib.loader.user import UserLoader
+from lib.loader.article import ArticleLoader
+from lib.loader.user_articles import UserArticlesLoader
 
 
 class Context(StdClass):
@@ -12,7 +14,13 @@ class Context(StdClass):
         StdClass.__init__(self)
 
         self.request = request
-        self.loaders = Loaders
+
+        # DataLoaders
+        self.loaders = StdClass(
+            user=UserLoader(),
+            article=ArticleLoader(),
+            user_articles=UserArticlesLoader()
+        )
 
         # Empty user
         self.user = StdClass(
