@@ -32,6 +32,7 @@ def auth():
                     'token': token,
                     'expire': time() + 604800,
                 })
+                break
             except DuplicateKeyError:
                 if i == 5:
                     raise ValueError("You've hit the jackpot!")
