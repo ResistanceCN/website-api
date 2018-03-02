@@ -1,3 +1,4 @@
+from time import time
 from bson.objectid import ObjectId
 from flask_graphql import GraphQLView
 
@@ -19,7 +20,7 @@ class Context(StdClass):
         self.loaders = StdClass(
             user=UserLoader(),
             article=ArticleLoader(),
-            user_articles=UserArticlesLoader()
+            user_articles=UserArticlesLoader(),
         )
 
         # Empty user
@@ -38,6 +39,9 @@ class Context(StdClass):
         if session is None:
             return
 
+        if session.expire < time():
+            return db().sessions.delete(session['_id'])
+
         user = db().users.find_one(session.user_id)
         if user is None:
             return
@@ -45,7 +49,7 @@ class Context(StdClass):
         self.user = StdClass(
             id=user['_id'],
             faction=user['faction'],
-            is_admin=user['is_admin']
+            is_admin=user['is_admin'],
         )
 
 

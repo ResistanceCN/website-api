@@ -24,19 +24,24 @@ def auth():
         if user is None:
             return '{"register":true}'
 
-        for i in range(5):
+        for i in range(6):
             token = str(uuid4())
             try:
                 db().sessions.insert({
                     'user_id': user['_id'],
                     'token': token,
-                    'expire': time() + 604800
+                    'expire': time() + 604800,
                 })
-
-                return '{"token":"' + token + '"}'
             except DuplicateKeyError:
-                pass
+                if i == 5:
+                    raise ValueError("You've hit the jackpot!")
 
-        raise ValueError("You've hit the jackpot!")
+        active = db().sessions.find({'user_id', user['_id']}, {'_id': 1}).limit(5)
+        db().sessions.delete_many({
+            'user_id': user['_id'],
+            '_id': {'$nin': [s['_id'] for s in active]},
+        })
+
+        return '{"token":"' + token + '"}'
     except Exception:
         abort(401)
