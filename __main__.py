@@ -4,9 +4,10 @@ from graphene import Schema
 from graphql.execution.executors.asyncio import AsyncioExecutor
 
 import config
-from lib.handler.auth import auth
-from lib.handler.ql import AuthenticatedView
+from lib.handlers.auth import auth
+from lib.handlers.ql import AuthenticatedView
 from lib.schemas.query import Query
+from lib.schemas.mutation import Mutation
 
 if config.DEBUG:
     print('+------------------------------------------------------+')
@@ -22,9 +23,18 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
+if config.DEBUG:
+    origin_handler = app.handle_http_exception
+
+    def log_handler(e):
+        print(e)
+        return origin_handler(e)
+
+    app.handle_http_exception = log_handler
+
 
 @app.after_request
-def cors(response):
+def access_control(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Access-Control-Allow-Methods'] = request.headers.get('Access-Control-Request-Methods')
     response.headers['Access-Control-Allow-Headers'] = request.headers.get('Access-Control-Request-Headers')
@@ -37,7 +47,7 @@ app.add_url_rule(
     endpoint='graphql',
     view_func=AuthenticatedView.as_view(
         name='graphql',
-        schema=Schema(Query),
+        schema=Schema(query=Query, mutation=Mutation),
         graphiql=config.DEBUG,
         executor=AsyncioExecutor(),
     )

@@ -1,2 +1,2 @@
-def nstr(dt):
-    return None if dt is None else str(dt)
+def nstr(sth):
+    return None if sth is None else str(sth)

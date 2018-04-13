@@ -4,7 +4,7 @@ from bson.objectid import ObjectId
 
 from lib.helper import nstr
 from lib.mongo import db
-import lib.schemas.user
+import lib.schemas.types.user
 
 
 def filter_user_fields(user, context):
@@ -33,14 +33,14 @@ class UserLoader(DataLoader):
 
         users = {}
         for result in db().users.find({'_id': {'$in': keys}}):
-            users[result['_id']] = lib.schemas.user.User(
+            users[result['_id']] = lib.schemas.types.user.User(
                 id=result['_id'],
                 google_id=result['google_id'],
                 email=result['email'],
                 is_admin=result['is_admin'],
                 name=result['name'],
                 faction=result['faction'],
-                created_at=str(result['created_at']),
+                created_at=nstr(result['created_at']),
             )
 
         return Promise.resolve([users.get(key) for key in keys])

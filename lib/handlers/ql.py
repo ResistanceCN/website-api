@@ -1,13 +1,14 @@
 from time import time
+import logging
 from bson.objectid import ObjectId
 from flask_graphql import GraphQLView
 
 from lib.stdclass import StdClass
 from lib.definition import Faction
 from lib.mongo import db
-from lib.loader.user import UserLoader
-from lib.loader.article import ArticleLoader
-from lib.loader.user_articles import UserArticlesLoader
+from lib.loaders.user import UserLoader
+from lib.loaders.article import ArticleLoader
+from lib.loaders.user_articles import UserArticlesLoader
 
 
 class Context(StdClass):
@@ -24,11 +25,14 @@ class Context(StdClass):
         )
 
         # Empty user
+        self.logged_in = False
         self.user = StdClass(
             id=ObjectId('000000000000000000000000'),
             faction=Faction.Unspecified,
             is_admin=False,
         )
+
+        self.new_user = None
 
         self.get_user_info()
 
@@ -39,10 +43,17 @@ class Context(StdClass):
         if session is None:
             return
 
-        if session.expire < time():
-            return db().sessions.delete(session['_id'])
+        if session['expire'] < time():
+            return db().sessions.delete_one(session['_id'])
 
-        user = db().users.find_one(session.user_id)
+        if session.get('new_user'):
+            self.new_user = StdClass(
+                google_id=session['google_id'],
+                email=session['email'],
+            )
+            return
+
+        user = db().users.find_one(session['user_id'])
         if user is None:
             return
 
@@ -51,8 +62,18 @@ class Context(StdClass):
             faction=user['faction'],
             is_admin=user['is_admin'],
         )
+        self.logged_in = True
 
 
 class AuthenticatedView(GraphQLView):
     def get_context(self, request):
         return Context(request)
+
+    def execute_graphql_request(self, data, query, variables, operation_name, show_graphiql=False):
+        result = GraphQLView.execute_graphql_request(self, data, query, variables, operation_name, show_graphiql)
+
+        if result.invalid:
+            for e in result.errors:
+                logging.error('Error at %s', 'division', exc_info=e)
+
+        return result

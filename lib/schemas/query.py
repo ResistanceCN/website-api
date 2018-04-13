@@ -3,10 +3,10 @@ import graphene
 
 from lib.helper import nstr
 from lib.mongo import db
-from lib.loader.user import filter_user_fields
-from lib.loader.article import filter_article_fields
-from .user import User
-from .article import Article
+from lib.loaders.user import filter_user_fields
+from lib.loaders.article import filter_article_fields
+from lib.schemas.types.user import User
+from lib.schemas.types.article import Article
 
 
 class Query(graphene.ObjectType):
@@ -34,11 +34,13 @@ class Query(graphene.ObjectType):
         return 'Hello ' + name
 
     async def resolve_me(self, info):
-        user_id = info.context.user.id
+        if not info.context.logged_in:
+            raise Exception('You have not been logged in.')
 
+        user_id = info.context.user.id
         user = await info.context.loaders.user.load(user_id)
         if user is None:
-            abort(401)
+            raise Exception('You have not been logged in.')
 
         filter_user_fields(user, info.context)
         return user

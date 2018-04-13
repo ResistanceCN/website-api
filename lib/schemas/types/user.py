@@ -1,7 +1,7 @@
 import graphene
 
-import lib.schemas.article
-import lib.loader.article
+import lib.schemas.types.article
+import lib.loaders.article
 
 
 class User(graphene.ObjectType):
@@ -12,7 +12,7 @@ class User(graphene.ObjectType):
     is_admin = graphene.Boolean()
     faction = graphene.Int()
     created_at = graphene.String()
-    articles = graphene.List(lambda: lib.schemas.article.Article)
+    articles = graphene.List(lambda: lib.schemas.types.article.Article)
 
     async def resolve_articles(self, info):
         articles = await info.context.loaders.user_articles.load(self.id)
@@ -20,5 +20,5 @@ class User(graphene.ObjectType):
         if info.context.user.id != self.id:
             articles = [article for article in articles if article.published_at is not None]
 
-        lib.loader.article.filter_article_fields(articles, info.context)
+        lib.loaders.article.filter_article_fields(articles, info.context)
         return articles
