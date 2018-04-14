@@ -27,18 +27,15 @@ def auth():
                 'email': id_info['email'],
                 'expire': time() + 604800,
             })
+            delete_inactive({'google_id': google_id}, 3)
+
             return '{"token":"' + token + '","newUser":true}'
 
         token = insert_token({
             'user_id': user['_id'],
             'expire': time() + 604800,
         })
-
-        active = db().sessions.find({'user_id': user['_id']}).sort('_id', -1).limit(5)
-        db().sessions.delete_many({
-            'user_id': user['_id'],
-            '_id': {'$nin': [s['_id'] for s in active]},
-        })
+        delete_inactive({'user_id': user['_id']}, 5)
 
         return '{"token":"' + token + '"}'
     except Exception:
@@ -57,3 +54,11 @@ def insert_token(content):
         except DuplicateKeyError:
             if i == 5:
                 raise ValueError("You've hit the jackpot!")
+
+
+def delete_inactive(cond, active_count):
+    active = db().sessions.find(cond).sort('_id', -1).limit(active_count)
+    db().sessions.delete_many({
+        **cond,
+        '_id': {'$nin': [s['_id'] for s in active]},
+    })
