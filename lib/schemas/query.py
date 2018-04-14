@@ -61,7 +61,7 @@ class Query(graphene.ObjectType):
     def resolve_latest_articles(self, info, count, offset):
         articles = []
 
-        results = db().articles.find().skip(offset).limit(count)
+        results = db().articles.find({'published_at': {'$ne': None}}).skip(offset).limit(count)
 
         for result in results:
             article = Article(

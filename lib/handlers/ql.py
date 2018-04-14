@@ -1,7 +1,9 @@
 from time import time
 import logging
 from bson.objectid import ObjectId
+from flask import request
 from flask_graphql import GraphQLView
+from graphql.execution import ExecutionResult
 
 from lib.stdclass import StdClass
 from lib.definition import Faction
@@ -72,8 +74,7 @@ class AuthenticatedView(GraphQLView):
     def execute_graphql_request(self, data, query, variables, operation_name, show_graphiql=False):
         result = GraphQLView.execute_graphql_request(self, data, query, variables, operation_name, show_graphiql)
 
-        if result.invalid:
-            request = self.context.request
+        if isinstance(result, ExecutionResult) and result.invalid:
             for error in result.errors:
                 logging.error('Exception on %s [%s]' % (
                     request.path,

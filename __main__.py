@@ -23,21 +23,13 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-if config.DEBUG:
-    origin_handler = app.handle_http_exception
-
-    def log_handler(e):
-        print(e)
-        return origin_handler(e)
-
-    app.handle_http_exception = log_handler
-
 
 @app.after_request
 def access_control(response):
+    headers = request.headers
     response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Methods'] = request.headers.get('Access-Control-Request-Methods')
-    response.headers['Access-Control-Allow-Headers'] = request.headers.get('Access-Control-Request-Headers')
+    response.headers['Access-Control-Allow-Methods'] = headers.get('Access-Control-Request-Methods')
+    response.headers['Access-Control-Allow-Headers'] = headers.get('Access-Control-Request-Headers')
     return response
 
 
