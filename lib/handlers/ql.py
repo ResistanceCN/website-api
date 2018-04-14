@@ -73,7 +73,11 @@ class AuthenticatedView(GraphQLView):
         result = GraphQLView.execute_graphql_request(self, data, query, variables, operation_name, show_graphiql)
 
         if result.invalid:
-            for e in result.errors:
-                logging.error('Error at %s', 'division', exc_info=e)
+            request = self.context.request
+            for error in result.errors:
+                logging.error('Exception on %s [%s]' % (
+                    request.path,
+                    request.method
+                ), exc_info=error)
 
         return result
