@@ -1,10 +1,12 @@
+from hashlib import md5
 import graphene
 
+from .object import ObjectType
 import lib.schemas.types.article
 import lib.loaders.article
 
 
-class User(graphene.ObjectType):
+class User(ObjectType):
     id = graphene.ID()
     google_id = graphene.String()
     email = graphene.String()
@@ -13,6 +15,7 @@ class User(graphene.ObjectType):
     faction = graphene.Int()
     created_at = graphene.String()
     articles = graphene.List(lambda: lib.schemas.types.article.Article)
+    email_hash = hello = graphene.String()
 
     async def resolve_articles(self, info):
         articles = await info.context.loaders.user_articles.load(self.id)
@@ -23,3 +26,9 @@ class User(graphene.ObjectType):
 
         lib.loaders.article.filter_article_fields(articles, info.context)
         return articles
+
+    def resolve_email_hash(self, info):
+        if self.email_hash is None:
+            self.email_hash = md5(self.get_field('email').encode('utf-8').lower()).hexdigest()
+
+        return self.email_hash

@@ -1,10 +1,11 @@
 import graphene
 
+from .object import ObjectType
 import lib.schemas.types.user
 import lib.loaders.user
 
 
-class Article(graphene.ObjectType):
+class Article(ObjectType):
     id = graphene.ID()
     author_id = graphene.Int()
     author = graphene.Field(lambda: lib.schemas.types.user.User)

@@ -17,11 +17,11 @@ def filter_user_fields(user, context):
         return
 
     if not context.user.is_admin:
-        user.google_id = None
-        user.is_admin = None
+        user.hide_field('google_id')
+        user.hide_field('is_admin')
 
     if id != context.user.id:
-        user.email = None
+        user.hide_field('email')
 
 
 class UserLoader(DataLoader):
