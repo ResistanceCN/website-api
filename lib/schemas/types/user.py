@@ -17,7 +17,8 @@ class User(graphene.ObjectType):
     async def resolve_articles(self, info):
         articles = await info.context.loaders.user_articles.load(self.id)
 
-        if info.context.user.id != self.id:
+        me = info.context.user
+        if not me.is_admin and me.id != self.id:
             articles = [article for article in articles if article.published_at is not None]
 
         lib.loaders.article.filter_article_fields(articles, info.context)
