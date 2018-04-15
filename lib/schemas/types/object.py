@@ -8,8 +8,11 @@ class ObjectType(graphene.ObjectType):
 
     def hide_field(self, field: str):
         value = getattr(self, field)
+        if value is None:
+            return
+
         setattr(self, field, None)
-        self._hidden_fields[field] = str
+        self._hidden_fields[field] = value
 
     def get_field(self, field: str):
         value = getattr(self, field)

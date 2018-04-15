@@ -15,7 +15,7 @@ class User(ObjectType):
     faction = graphene.Int()
     created_at = graphene.String()
     articles = graphene.List(lambda: lib.schemas.types.article.Article)
-    email_hash = hello = graphene.String()
+    email_hash = graphene.String()
 
     async def resolve_articles(self, info):
         articles = await info.context.loaders.user_articles.load(self.id)

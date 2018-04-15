@@ -16,11 +16,13 @@ def filter_user_fields(user, context):
             filter_user_fields(i, context)
         return
 
-    if not context.user.is_admin:
-        user.hide_field('google_id')
-        user.hide_field('is_admin')
+    if context.user.is_admin:
+        return
 
-    if id != context.user.id:
+    user.hide_field('google_id')
+    user.hide_field('is_admin')
+
+    if user.id != context.user.id:
         user.hide_field('email')
 
 
