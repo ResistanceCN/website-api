@@ -18,7 +18,7 @@ class UserArticlesLoader(DataLoader):
         for key in keys:
             articles[key] = []
 
-        for result in db().articles.find({'author_id': {'$in': keys}}):
+        for result in db().articles.find({'author_id': {'$in': keys}}).sort('_id', -1):
             articles[result['author_id']].append(lib.schemas.types.article.Article(
                 id=result['_id'],
                 author_id=result['author_id'],
