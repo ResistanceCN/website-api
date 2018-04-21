@@ -1,6 +1,6 @@
 import graphene
 
-from lib.helper import nstr
+from lib.helper import nstr, estr
 from .object import ObjectType
 import lib.schemas.types.user
 import lib.loaders.user
@@ -13,15 +13,15 @@ class ArticleStatus(graphene.Enum):
 
 
 class Article(ObjectType):
-    id = graphene.ID()
-    author_id = graphene.Int()
-    author = graphene.Field(lambda: lib.schemas.types.user.User)
+    id = graphene.ID(required=True)
+    author_id = graphene.Int(required=True)
+    author = graphene.Field(lambda: lib.schemas.types.user.User, required=True)
     tags = graphene.List(graphene.String)
-    title = graphene.String()
-    content = graphene.String()
-    status = ArticleStatus()
-    created_at = graphene.String()
-    updated_at = graphene.String()
+    title = graphene.String(required=True)
+    content = graphene.String(required=True)
+    status = ArticleStatus(required=True)
+    created_at = graphene.String(required=True)
+    updated_at = graphene.String(required=True)
     published_at = graphene.String()
 
     @classmethod
@@ -34,8 +34,8 @@ class Article(ObjectType):
         return cls(
             id=data['_id'],
             author_id=data['author_id'],
-            title=data['title'],
-            content=data['content'],
+            title=estr(data['title']),
+            content=estr(data['content']),
             tags=data.get('tags', []),
             status=status.value,
             created_at=str(data['created_at']),
