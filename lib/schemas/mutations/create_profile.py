@@ -11,8 +11,8 @@ class CreateProfile(graphene.Mutation):
         output = User
 
     class Arguments:
-        name = graphene.String()
-        faction = graphene.Int()
+        name = graphene.String(required=True)
+        faction = graphene.Int(required=True)
 
     def mutate(self, info, name, faction):
         if info.context.logged_in:

@@ -10,8 +10,8 @@ class CreateArticle(graphene.Mutation):
         output = Article
 
     class Arguments:
-        title = graphene.String()
-        content = graphene.String()
+        title = graphene.String(required=True)
+        content = graphene.String(required=True)
 
     async def mutate(self, info, title, content):
         if not info.context.logged_in:

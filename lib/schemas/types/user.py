@@ -21,8 +21,9 @@ class User(ObjectType):
         articles = await info.context.loaders.user_articles.load(self.id)
 
         me = info.context.user
-        if not me.is_admin and me.id != self.id:
-            articles = [article for article in articles if article.published_at is not None]
+        if me.id != self.id:
+            published = lib.schemas.types.article.ArticleStatus.PUBLISHED
+            articles = [article for article in articles if article.status == published]
 
         lib.loaders.article.filter_article_fields(articles, info.context)
         return articles

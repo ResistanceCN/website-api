@@ -1,12 +1,10 @@
-from flask import abort
 import graphene
 
-from lib.helper import nstr
 from lib.mongo import db
 from lib.loaders.user import filter_user_fields
 from lib.loaders.article import filter_article_fields
 from lib.schemas.types.user import User
-from lib.schemas.types.article import Article
+from lib.schemas.types.article import Article, ArticleStatus
 
 
 class Query(graphene.ObjectType):
@@ -16,11 +14,11 @@ class Query(graphene.ObjectType):
     me = graphene.Field(User)
     user_by_id = graphene.Field(
         type=User,
-        id=graphene.ID(),
+        id=graphene.ID(required=True),
     )
     article_by_id = graphene.Field(
         type=Article,
-        id=graphene.ID(),
+        id=graphene.ID(required=True),
     )
     article_count = graphene.Int()
     latest_articles = graphene.Field(
@@ -62,23 +60,13 @@ class Query(graphene.ObjectType):
         articles = []
 
         results = db().articles\
-            .find({'published_at': {'$ne': None}})\
+            .find({'status': ArticleStatus.PUBLISHED.value})\
             .sort('_id', -1)\
             .skip(offset)\
             .limit(count)
 
         for result in results:
-            article = Article(
-                id=result['_id'],
-                author_id=result['author_id'],
-                title=result['title'],
-                content=result['content'],
-                tags=result.get('tags', []),
-                created_at=str(result['created_at']),
-                updated_at=str(result['updated_at']),
-                published_at=nstr(result.get('published_at')),
-            )
-
+            article = Article.from_dict(result)
             filter_article_fields(article, info.context)
             articles.append(article)
 

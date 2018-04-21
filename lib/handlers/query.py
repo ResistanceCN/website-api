@@ -4,13 +4,20 @@ from bson.objectid import ObjectId
 from flask import request
 from flask_graphql import GraphQLView
 from graphql.execution import ExecutionResult
+from graphene import Schema
+from graphql.execution.executors.asyncio import AsyncioExecutor
 
+import config
 from lib.stdclass import StdClass
 from lib.definition import Faction
 from lib.mongo import db
 from lib.loaders.user import UserLoader
 from lib.loaders.article import ArticleLoader
 from lib.loaders.user_articles import UserArticlesLoader
+from lib.schemas.query import Query
+from lib.schemas.mutation import Mutation
+from lib.schemas.admin.query import AdminQuery
+from lib.schemas.admin.mutation import AdminMutation
 
 
 class Context(StdClass):
@@ -68,8 +75,9 @@ class Context(StdClass):
 
 
 class AuthenticatedView(GraphQLView):
-    def get_context(self, request):
-        return Context(request)
+    def __init__(self, **kwargs):
+        GraphQLView.__init__(self, **kwargs)
+        self.context = Context(request)
 
     def execute_graphql_request(self, data, query, variables, operation_name, show_graphiql=False):
         result = GraphQLView.execute_graphql_request(self, data, query, variables, operation_name, show_graphiql)
@@ -82,3 +90,26 @@ class AuthenticatedView(GraphQLView):
                 ), exc_info=error)
 
         return result
+
+
+class AdminView(AuthenticatedView):
+    def execute(self, *args, **kwargs):
+        if self.context.user is None or not self.context.user.is_admin:
+            raise Exception("Access denied!")
+
+        return AuthenticatedView.execute(self, *args, **kwargs)
+
+
+api_view = AuthenticatedView.as_view(
+    name='api',
+    schema=Schema(query=Query, mutation=Mutation),
+    graphiql=config.DEBUG,
+    executor=AsyncioExecutor(),
+)
+
+admin_api_view = AdminView.as_view(
+    name='admin_api',
+    schema=Schema(query=AdminQuery, mutation=AdminMutation),
+    graphiql=config.DEBUG,
+    executor=AsyncioExecutor(),
+)

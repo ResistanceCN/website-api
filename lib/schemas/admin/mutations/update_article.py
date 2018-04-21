@@ -14,35 +14,29 @@ class UpdateArticle(graphene.Mutation):
         id = graphene.ID(required=True)
         title = graphene.String()
         content = graphene.String()
+        status = ArticleStatus()
 
-    async def mutate(self, info, id, title=None, content=None):
-        if not info.context.logged_in:
-            raise Exception('You must log in to update an article.')
-
+    async def mutate(self, info, id, title=None, content=None, status=None):
         article = await info.context.loaders.article.load(id)
         if article is None:
             raise Exception('The article does not exist.')
-
-        me = info.context.user
-        if not me.is_admin and (me.id != article.author_id or article.status != ArticleStatus.DRAFT):
-            raise Exception('Access denied.')
 
         now = datetime.now()
         fields_set = {'updated_at': now}
         article.updated_at = now
 
         if title is not None:
-            if len(title) == 0:
-                raise Exception('The title must not be empty.')
             fields_set['title'] = title
             article.title = title
-
         if content is not None:
-            if len(content) == 0:
-                raise Exception('The content must not be empty.')
             fields_set['content'] = content
             article.content = content
+        if status is not None:
+            fields_set['status'] = status
+            article.status = status
 
-        db().articles.update_one({'_id': ObjectId(id)}, {'$set': fields_set})
+        db().articles.update_one({'_id': ObjectId(id)}, {
+            '$set': fields_set,
+        })
 
         return article

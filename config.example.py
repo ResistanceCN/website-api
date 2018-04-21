@@ -9,5 +9,5 @@ MONGO_USERNAME = 'cantonres'
 MONGO_PASSWORD = 'cantonres'
 MONGO_AUTH_DB = 'cantonres'
 
-GOOGLE_CLIENT_ID='xxx.apps.googleusercontent.com'
-GOOGLE_MAP_KEY='xxx'
+GOOGLE_CLIENT_ID = 'xxx.apps.googleusercontent.com'
+GOOGLE_MAP_KEY = 'xxx'

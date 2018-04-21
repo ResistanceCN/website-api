@@ -1,13 +1,9 @@
 import logging
 from flask import Flask, request
-from graphene import Schema
-from graphql.execution.executors.asyncio import AsyncioExecutor
 
 import config
 from lib.handlers.auth import auth
-from lib.handlers.ql import AuthenticatedView
-from lib.schemas.query import Query
-from lib.schemas.mutation import Mutation
+from lib.handlers.query import api_view, admin_api_view
 
 if config.DEBUG:
     print('+------------------------------------------------------+')
@@ -34,15 +30,7 @@ def access_control(response):
 
 
 app.add_url_rule('/auth', endpoint='auth', view_func=auth)
-app.add_url_rule(
-    '/graphql',
-    endpoint='graphql',
-    view_func=AuthenticatedView.as_view(
-        name='graphql',
-        schema=Schema(query=Query, mutation=Mutation),
-        graphiql=config.DEBUG,
-        executor=AsyncioExecutor(),
-    )
-)
+app.add_url_rule('/api', endpoint='api', view_func=api_view)
+app.add_url_rule('/admin_api', endpoint='admin_api', view_func=admin_api_view)
 
 app.run(host=config.HOST, port=config.PORT, debug=config.DEBUG)

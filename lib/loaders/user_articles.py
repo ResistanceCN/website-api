@@ -2,7 +2,6 @@ from promise import Promise
 from promise.dataloader import DataLoader
 from bson.objectid import ObjectId
 
-from lib.helper import nstr
 from lib.mongo import db
 import lib.schemas.types.article
 
@@ -19,15 +18,7 @@ class UserArticlesLoader(DataLoader):
             articles[key] = []
 
         for result in db().articles.find({'author_id': {'$in': keys}}).sort('_id', -1):
-            articles[result['author_id']].append(lib.schemas.types.article.Article(
-                id=result['_id'],
-                author_id=result['author_id'],
-                title=result['title'],
-                content=result['content'],
-                tags=result.get('tags', []),
-                created_at=str(result['created_at']),
-                updated_at=str(result['updated_at']),
-                published_at=nstr(result.get('published_at')),
-            ))
+            article = lib.schemas.types.article.Article.from_dict(result)
+            articles[result['author_id']].append(article)
 
         return Promise.resolve([articles[key] for key in keys])
