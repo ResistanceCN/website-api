@@ -4,6 +4,7 @@ from lib.mongo import db
 from lib.loaders.user import filter_user_fields
 from lib.loaders.article import filter_article_fields
 from lib.schemas.types.user import User
+from lib.schemas.types.join_info import JoinInfo
 from lib.schemas.types.article import Article, ArticleStatus
 
 
@@ -12,6 +13,7 @@ class Query(graphene.ObjectType):
         name=graphene.String(default_value="world"),
     )
     me = graphene.Field(User)
+    join_info = graphene.Field(JoinInfo)
     user_by_id = graphene.Field(
         type=User,
         id=graphene.ID(required=True),
@@ -42,6 +44,21 @@ class Query(graphene.ObjectType):
 
         filter_user_fields(user, info.context)
         return user
+
+    async def resolve_join_info(self, info):
+        if not info.context.logged_in:
+            raise Exception('You have not been logged in.')
+
+        user_id = info.context.user.id
+        result = db().users.find_one(user_id).get('join_info')
+
+        return None if result is None else JoinInfo(
+            name=result['name'],
+            telegram=result['telegram'],
+            regions=result['regions'],
+            other=result['other'],
+            updated_at=str(result['updated_at'])
+        )
 
     async def resolve_user_by_id(self, info, id):
         user = await info.context.loaders.user.load(id)
