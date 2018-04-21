@@ -53,7 +53,7 @@ class Context(StdClass):
             return
 
         if session['expire'] < time():
-            return db().sessions.delete_one(session['_id'])
+            return db().sessions.delete_one({'_id': session['_id']})
 
         if session.get('new_user'):
             self.new_user = StdClass(

@@ -57,7 +57,11 @@ def insert_token(content):
 
 
 def delete_inactive(cond, active_count):
-    active = db().sessions.find(cond).sort('_id', -1).limit(active_count)
+    active = db().sessions.find({
+        **cond,
+        'expire': {'$gt': time()}
+    }).sort('_id', -1).limit(active_count)
+
     db().sessions.delete_many({
         **cond,
         '_id': {'$nin': [s['_id'] for s in active]},
