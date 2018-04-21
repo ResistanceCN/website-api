@@ -34,6 +34,9 @@ class UpdateArticle(graphene.Mutation):
         if status is not None:
             fields_set['status'] = status
             article.status = status
+            if status == ArticleStatus.PUBLISHED:
+                fields_set['published_at'] = now
+                article.published_at = now
 
         db().articles.update_one({'_id': ObjectId(id)}, {
             '$set': fields_set,
