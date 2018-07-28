@@ -24,7 +24,7 @@ class UpdateArticle(graphene.Mutation):
             raise Exception('The article does not exist.')
 
         me = info.context.user
-        if not me.is_admin and (me.id != article.author_id or article.status != ArticleStatus.DRAFT):
+        if me.id != article.author_id or article.status != ArticleStatus.DRAFT:
             raise Exception('Access denied.')
 
         now = datetime.now()
