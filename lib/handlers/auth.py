@@ -25,6 +25,7 @@ def auth():
                 'new_user': True,
                 'google_id': google_id,
                 'email': id_info['email'],
+                'avatar': id_info['picture'],
                 'expire': time() + 604800,
             })
             delete_inactive({'google_id': google_id}, 3)

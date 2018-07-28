@@ -39,10 +39,11 @@ class UserLoader(DataLoader):
                 id=result['_id'],
                 google_id=result['google_id'],
                 email=result['email'],
+                avatar=nstr(result.get('avatar')),
                 is_admin=result['is_admin'],
                 name=result['name'],
                 faction=result['faction'],
-                created_at=nstr(result['created_at']),
+                created_at=str(result['created_at']),
             )
 
         return Promise.resolve([users.get(key) for key in keys])

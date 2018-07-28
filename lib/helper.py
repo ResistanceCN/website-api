@@ -1,6 +1,12 @@
 def nstr(sth):
-    return None if sth is None else str(sth)
+    if sth is None:
+        return None
+    else:
+        return str(sth)
 
 
 def estr(sth):
-    return '' if sth is None else str(sth)
+    if sth is None:
+        return ''
+    else:
+        return str(sth)

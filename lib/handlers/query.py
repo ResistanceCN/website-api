@@ -59,6 +59,7 @@ class Context(StdClass):
             self.new_user = StdClass(
                 google_id=session['google_id'],
                 email=session['email'],
+                avatar=session['avatar'],
             )
             return
 
