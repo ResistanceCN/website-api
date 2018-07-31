@@ -3,7 +3,7 @@ import logging
 from bson.objectid import ObjectId
 from flask import request
 from flask_graphql import GraphQLView
-from graphql.execution import ExecutionResult
+from graphql.error.base import GraphQLError
 from graphene import Schema
 from graphql.execution.executors.asyncio import AsyncioExecutor
 
@@ -80,25 +80,26 @@ class AuthenticatedView(GraphQLView):
         GraphQLView.__init__(self, **kwargs)
         self.context = Context(request)
 
-    def execute_graphql_request(self, data, query, variables, operation_name, show_graphiql=False):
-        result = GraphQLView.execute_graphql_request(self, data, query, variables, operation_name, show_graphiql)
+    def get_context(self):
+        return self.context
 
-        if isinstance(result, ExecutionResult) and result.invalid:
-            for error in result.errors:
-                logging.error('Exception on %s [%s]' % (
-                    request.path,
-                    request.method
-                ), exc_info=error)
+    @staticmethod
+    def format_error(error):
+        if isinstance(error, GraphQLError):
+            logging.error('Exception on %s [%s]' % (
+                request.path,
+                request.method
+            ), exc_info=error)
 
-        return result
+        return GraphQLView.format_error(error)
 
 
 class AdminView(AuthenticatedView):
-    def execute(self, *args, **kwargs):
+    def dispatch_request(self):
         if self.context.user is None or not self.context.user.is_admin:
             raise Exception("Access denied!")
 
-        return AuthenticatedView.execute(self, *args, **kwargs)
+        return AuthenticatedView.dispatch_request(self)
 
 
 api_view = AuthenticatedView.as_view(
