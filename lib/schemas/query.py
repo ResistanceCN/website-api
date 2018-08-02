@@ -53,7 +53,7 @@ class Query(graphene.ObjectType):
         result = db().users.find_one(user_id).get('join_info')
 
         return None if result is None else JoinInfo(
-            name=result['name'],
+            agent_name=result['agent_name'],
             telegram=result['telegram'],
             regions=result['regions'],
             other=result['other'],
