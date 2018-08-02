@@ -5,8 +5,8 @@
 
 ## Requirements
 
-* Python 3.6+
-* MongDB 3.6+
+* Python 3.7+
+* MongoDB 4.0+
 
 ## Todo List
 

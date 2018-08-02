@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from time import time
 import logging
 from bson.objectid import ObjectId
@@ -8,7 +9,6 @@ from graphene import Schema
 from graphql.execution.executors.asyncio import AsyncioExecutor
 
 import config
-from lib.stdclass import StdClass
 from lib.definition import Faction
 from lib.mongo import db
 from lib.loaders.user import UserLoader
@@ -20,14 +20,30 @@ from lib.schemas.admin.query import AdminQuery
 from lib.schemas.admin.mutation import AdminMutation
 
 
-class Context(StdClass):
-    def __init__(self, request):
-        StdClass.__init__(self)
+class Context:
+    @dataclass
+    class Loaders:
+        user: UserLoader
+        article: ArticleLoader
+        user_articles: UserArticlesLoader
 
-        self.request = request
+    @dataclass
+    class User:
+        id: ObjectId = ObjectId('000000000000000000000000')
+        faction: Faction = Faction.Unspecified
+        is_admin: bool = False
+
+    @dataclass
+    class NewUser:
+        google_id: str
+        email: str
+        avatar: str
+
+    def __init__(self, req):
+        self.request = req
 
         # DataLoaders
-        self.loaders = StdClass(
+        self.loaders = Context.Loaders(
             user=UserLoader(),
             article=ArticleLoader(),
             user_articles=UserArticlesLoader(),
@@ -35,11 +51,7 @@ class Context(StdClass):
 
         # Empty user
         self.logged_in = False
-        self.user = StdClass(
-            id=ObjectId('000000000000000000000000'),
-            faction=Faction.Unspecified,
-            is_admin=False,
-        )
+        self.user = Context.User()
 
         self.new_user = None
 
@@ -56,7 +68,7 @@ class Context(StdClass):
             return db().sessions.delete_one({'_id': session['_id']})
 
         if session.get('new_user'):
-            self.new_user = StdClass(
+            self.new_user = Context.NewUser(
                 google_id=session['google_id'],
                 email=session['email'],
                 avatar=session['avatar'],
@@ -67,7 +79,7 @@ class Context(StdClass):
         if user is None:
             return
 
-        self.user = StdClass(
+        self.user = Context.User(
             id=user['_id'],
             faction=user['faction'],
             is_admin=user['is_admin'],
