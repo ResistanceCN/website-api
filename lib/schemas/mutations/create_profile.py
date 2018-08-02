@@ -36,6 +36,7 @@ class CreateProfile(graphene.Mutation):
         result = db().users.insert_one({
             'google_id': new_user.google_id,
             'email': new_user.email,
+            'avatar': new_user.avatar,
             'is_admin': False,
             'name': name,
             'faction': faction,
