@@ -16,6 +16,7 @@ class JoinStatus(graphene.Enum):
             return "This agent has been banned."
         return "This agent hasn't been invited to our telegram groups."
 
+
 class JoinInfo(ObjectType):
     agent_name = graphene.String(required=True)
     telegram = graphene.String(required=True)
