@@ -11,12 +11,12 @@ class Join(graphene.Mutation):
         output = JoinInfo
 
     class Arguments:
-        name = graphene.String(required=True)
+        agent_name = graphene.String(required=True)
         telegram = graphene.String(required=True)
         regions = graphene.List(graphene.String, required=True)
         other = graphene.String()
 
-    async def mutate(self, info, name, telegram, regions, other=None):
+    async def mutate(self, info, agent_name, telegram, regions, other=None):
         if not info.context.logged_in:
             raise Exception('Please log in first.')
 
@@ -24,11 +24,11 @@ class Join(graphene.Mutation):
         if me.faction != Faction.Resistance:
             raise Exception('Access denied.')
 
-        if name == '' or telegram == '' or len(regions) == 0:
-            raise Exception('Name, Telegram and regions must not be empty.')
+        if agent_name == '' or telegram == '' or len(regions) == 0:
+            raise Exception('Agent name, telegram username and regions must not be empty.')
 
         join_info = {
-            'name': name,
+            'agent_name': agent_name,
             'telegram': telegram,
             'regions': regions,
             'other': '' if other is None else other,
@@ -42,7 +42,7 @@ class Join(graphene.Mutation):
         })
 
         return JoinInfo(
-            name=join_info['name'],
+            agent_name=join_info['agent_name'],
             telegram=join_info['telegram'],
             regions=join_info['regions'],
             other=join_info['other'],

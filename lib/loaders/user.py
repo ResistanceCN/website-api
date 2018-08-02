@@ -4,7 +4,8 @@ from bson.objectid import ObjectId
 
 from lib.helper import nstr
 from lib.mongo import db
-import lib.schemas.types.user
+import lib.schemas.types.user as user
+from lib.schemas.types.join_info import JoinInfo
 
 
 def filter_user_fields(user, context):
@@ -35,7 +36,12 @@ class UserLoader(DataLoader):
 
         users = {}
         for result in db().users.find({'_id': {'$in': keys}}):
-            users[result['_id']] = lib.schemas.types.user.User(
+            if result.get('join_info') is None:
+                join_info = None
+            else:
+                join_info = JoinInfo.from_dict(result['join_info'])
+
+            users[result['_id']] = user.User(
                 id=result['_id'],
                 google_id=result['google_id'],
                 email=result['email'],
@@ -44,6 +50,7 @@ class UserLoader(DataLoader):
                 name=result['name'],
                 faction=result['faction'],
                 created_at=str(result['created_at']),
+                join_info=join_info
             )
 
         return Promise.resolve([users.get(key) for key in keys])

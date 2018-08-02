@@ -14,6 +14,7 @@ class User(ObjectType):
     is_admin = graphene.Boolean()
     faction = graphene.Int()
     created_at = graphene.String()
+    join_info = graphene.Field(lambda: lib.schemas.types.join_info.JoinInfo)
     articles = graphene.List(lambda: lib.schemas.types.article.Article)
 
     async def resolve_articles(self, info):
