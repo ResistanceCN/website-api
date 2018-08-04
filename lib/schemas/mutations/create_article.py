@@ -28,6 +28,8 @@ class CreateArticle(graphene.Mutation):
 
         if len(title) == 0:
             raise Exception('The title must not be empty.')
+        if len(title) > 100:
+            raise Exception('Tht title must not more than 64 words.')
         if len(content) == 0:
             raise Exception('The content must not be empty.')
 

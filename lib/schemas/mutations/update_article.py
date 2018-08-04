@@ -34,6 +34,8 @@ class UpdateArticle(graphene.Mutation):
         if title is not None:
             if len(title) == 0:
                 raise Exception('The title must not be empty.')
+            if len(title) > 100:
+                raise Exception('Tht title must not more than 64 words.')
             fields_set['title'] = title
             article.title = title
 
