@@ -21,12 +21,12 @@ class AdminQuery(graphene.ObjectType):
     total_join_info = graphene.Int(
         status=graphene.Argument(JoinStatus)
     )
-    # list_join_info = graphene.Field(
-    #     type=graphene.List(JoinInfo),
-    #     count=graphene.Int(default_value=30),
-    #     offset=graphene.Int(default_valu=0),
-    #     status=graphene.Argument(JoinStatus)
-    # )
+    list_join_info = graphene.Field(
+        type=graphene.List(JoinInfo),
+        count=graphene.Int(default_value=30),
+        offset=graphene.Int(default_value=0),
+        status=graphene.Argument(JoinStatus)
+    )
 
     def resolve_hello(self, info, name):
         print(info.context)
@@ -58,15 +58,18 @@ class AdminQuery(graphene.ObjectType):
             cond['status'] = status
         return db().users.join_info.find(cond).count()
 
-    # def resolve_list_join_info(self, info, count, offset, status=None):
-    #     cond = {}
-    #     if status is not None:
-    #         cond['status'] = status
-    #
-    #     join_info = []
-    #     results = db().users.join_info.find(cond).skip(offset).limit(count)
-    #
-    #     for result in results:
-    #         join_info.append(JoinInfo.from_dict(result))
-    #
-    #     return join_info
+    def resolve_list_join_info(self, info, count, offset, status=None):
+        cond = {
+            'join_info': {'$ne': None}
+        }
+
+        if status is not None:
+            cond['status'] = status
+
+        join_info_list = []
+        results = db().users.find(cond).skip(offset).limit(count)
+
+        for result in results:
+            join_info_list.append(JoinInfo.from_dict(result['join_info']))
+
+        return join_info_list

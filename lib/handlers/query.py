@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from time import time
 import logging
 from bson.objectid import ObjectId
-from flask import request
+from flask import request, abort
 from flask_graphql import GraphQLView
 from graphql.error.base import GraphQLError
 from graphene import Schema
@@ -108,8 +108,10 @@ class AuthenticatedView(GraphQLView):
 
 class AdminView(AuthenticatedView):
     def dispatch_request(self):
-        if self.context.user is None or not self.context.user.is_admin:
-            raise Exception("Access denied!")
+        user = self.context.user
+        if user is None or not user.is_admin:
+            abort(403)
+            return
 
         return AuthenticatedView.dispatch_request(self)
 

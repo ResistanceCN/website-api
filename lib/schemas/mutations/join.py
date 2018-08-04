@@ -3,7 +3,7 @@ import graphene
 
 from lib.mongo import db
 from lib.definition import Faction
-from lib.schemas.types.join_info import JoinInfo
+from lib.schemas.types.join_info import JoinInfo, JoinStatus
 
 
 class Join(graphene.Mutation):
@@ -16,7 +16,7 @@ class Join(graphene.Mutation):
         regions = graphene.List(graphene.String, required=True)
         other = graphene.String()
 
-    async def mutate(self, info, agent_name, telegram, regions, other=None):
+    async def mutate(self, info, agent_name, telegram, regions, other=''):
         if not info.context.logged_in:
             raise Exception('Please log in first.')
 
@@ -27,12 +27,24 @@ class Join(graphene.Mutation):
         if agent_name == '' or telegram == '' or len(regions) == 0:
             raise Exception('Agent name, telegram username and regions must not be empty.')
 
+        user = db().users.find_one({'_id': me.id})
+        now = datetime.now()
+
+        try:
+            join_info = user['join_info']
+        except Exception:
+            join_info = {'created_at': now}
+
+        if join_info.get('status') == JoinStatus.REJECTED:
+            raise Exception('Access denied.')
+
         join_info = {
+            **join_info,
             'agent_name': agent_name,
             'telegram': telegram,
             'regions': regions,
-            'other': '' if other is None else other,
-            'updated_at': datetime.now(),
+            'other': other,
+            'updated_at': now,
         }
 
         db().users.update_one({'_id': me.id}, {
@@ -41,10 +53,4 @@ class Join(graphene.Mutation):
             }
         })
 
-        return JoinInfo(
-            agent_name=join_info['agent_name'],
-            telegram=join_info['telegram'],
-            regions=join_info['regions'],
-            other=join_info['other'],
-            updated_at=str(join_info['updated_at'])
-        )
+        return JoinInfo.from_dict(join_info)

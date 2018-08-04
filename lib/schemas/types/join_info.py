@@ -4,17 +4,18 @@ from .object import ObjectType
 
 
 class JoinStatus(graphene.Enum):
-    NOINVITED = 0
-    INVITED = 1
-    BANNED = 2
+    CREATED = 0
+    APPROVED = 1
+    REJECTED = 2
 
     @property
     def description(self):
-        if self == JoinStatus.INVITED:
-            return "This agent has been invited to our telegram groups."
-        if self == JoinStatus.BANNED:
-            return "This agent has been banned."
-        return "This agent hasn't been invited to our telegram groups."
+        if self == JoinStatus.APPROVED:
+            return "The agent has been admitted to our community."
+        if self == JoinStatus.REJECTED:
+            return "The joining request has been rejected."
+
+        return "The joining request is waiting for review."
 
 
 class JoinInfo(ObjectType):
@@ -22,6 +23,8 @@ class JoinInfo(ObjectType):
     telegram = graphene.String(required=True)
     regions = graphene.List(graphene.String, required=True)
     other = graphene.String(required=True)
+    status = JoinStatus(required=True)
+    created_at = graphene.String(required=True)
     updated_at = graphene.String(required=True)
 
     @classmethod
@@ -29,12 +32,14 @@ class JoinInfo(ObjectType):
         try:
             status = JoinStatus.get(data.get('status'))
         except ValueError:
-            status = JoinStatus.NOINVITED
+            status = JoinStatus.CREATED
 
         return cls(
             agent_name=data['agent_name'],
             telegram=data['telegram'],
             regions=data['regions'],
             other=data['other'],
+            status=status,
+            created_at=data['created_at'],
             updated_at=data['updated_at']
         )
