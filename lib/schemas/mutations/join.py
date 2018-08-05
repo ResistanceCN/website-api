@@ -5,8 +5,11 @@ from lib.mongo import db
 from lib.definition import Faction
 from lib.schemas.types.join_info import JoinInfo, JoinStatus
 
+allowed_char = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_'
+
 
 class Join(graphene.Mutation):
+
     class Meta:
         output = JoinInfo
 
@@ -33,6 +36,13 @@ class Join(graphene.Mutation):
             raise Exception('Telegram username must not more than 40 characters.')
         if len(other) > 512:
             raise Exception('Descriptions must not more than 512 characters.')
+
+        for ch in agent_name:
+            if ch not in allowed_char:
+                raise Exception('Agent name must match the pattern [0-9A-Za-z_]+')
+        for ch in telegram:
+            if ch not in allowed_char:
+                raise Exception('Telegram username must match the pattern [0-9A-Za-z_]+')
 
         user = db().users.find_one({'_id': me.id})
         now = datetime.now()
