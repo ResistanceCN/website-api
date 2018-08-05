@@ -33,7 +33,10 @@ class Join(graphene.Mutation):
         try:
             join_info = user['join_info']
         except Exception:
-            join_info = {'created_at': now}
+            join_info = {
+                'created_at': now,
+                'status': JoinStatus.PENDING.value
+            }
 
         if join_info.get('status') == JoinStatus.REJECTED:
             raise Exception('Access denied.')
@@ -53,4 +56,9 @@ class Join(graphene.Mutation):
             }
         })
 
-        return JoinInfo.from_dict(join_info)
+        info.context.loaders.user.clear(me.id)
+
+        return JoinInfo.from_dict({
+            **join_info,
+            'user_id': me.id,
+        })

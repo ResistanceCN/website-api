@@ -2,15 +2,31 @@ from bson.objectid import ObjectId
 import graphene
 
 from lib.mongo import db
+from lib.schemas.types.join_info import JoinInfo, JoinStatus
 
 
 class UpdateJoinInfo(graphene.Mutation):
     class Meta:
-        output = graphene.Boolean
+        output = JoinInfo
 
     class Arguments:
-        id = graphene.ID(required=True)
+        user_id = graphene.ID(required=True)
+        status = JoinStatus()
 
-    async def mutate(self, info, id):
-        # @TODO
-        pass
+    async def mutate(self, info, user_id, status=None):
+        print(user_id)
+
+        fields_set = {}
+        if status is not None:
+            fields_set['join_info.status'] = status
+
+        db().users.update_one({'_id': ObjectId(user_id)}, {
+            '$set': fields_set,
+        })
+
+        user = db().users.find_one({'_id': ObjectId(user_id)})
+
+        return JoinInfo.from_dict({
+            **user['join_info'],
+            'user_id': user_id,
+        })

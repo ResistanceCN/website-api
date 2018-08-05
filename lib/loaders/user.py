@@ -39,7 +39,10 @@ class UserLoader(DataLoader):
             if result.get('join_info') is None:
                 join_info = None
             else:
-                join_info = JoinInfo.from_dict(result['join_info'])
+                join_info = JoinInfo.from_dict({
+                    **result['join_info'],
+                    'user_id': result['_id'],
+                })
 
             users[result['_id']] = user.User(
                 id=result['_id'],

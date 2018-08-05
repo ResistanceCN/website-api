@@ -8,4 +8,4 @@ from .mutations.update_join_info import UpdateJoinInfo
 class AdminMutation(graphene.ObjectType):
     update_article = UpdateArticle.Field()
     delete_article = DeleteArticle.Field()
-    # update_join_info = UpdateJoinInfo.Field()
+    update_join_info = UpdateJoinInfo.Field()

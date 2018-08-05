@@ -53,10 +53,14 @@ class AdminQuery(graphene.ObjectType):
         return articles
 
     def resolve_total_join_info(self, info, status=None):
-        cond = {}
+        cond = {
+            'join_info': {'$ne': None}
+        }
+
         if status is not None:
-            cond['status'] = status
-        return db().users.join_info.find(cond).count()
+            cond['join_info.status'] = status
+
+        return db().users.find(cond).count()
 
     def resolve_list_join_info(self, info, count, offset, status=None):
         cond = {
@@ -64,12 +68,15 @@ class AdminQuery(graphene.ObjectType):
         }
 
         if status is not None:
-            cond['status'] = status
+            cond['join_info.status'] = status
 
         join_info_list = []
         results = db().users.find(cond).skip(offset).limit(count)
 
         for result in results:
-            join_info_list.append(JoinInfo.from_dict(result['join_info']))
+            join_info_list.append(JoinInfo.from_dict({
+                **result['join_info'],
+                'user_id': result['_id'],
+            }))
 
         return join_info_list

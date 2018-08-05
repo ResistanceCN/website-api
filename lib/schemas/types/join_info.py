@@ -4,7 +4,7 @@ from .object import ObjectType
 
 
 class JoinStatus(graphene.Enum):
-    CREATED = 0
+    PENDING = 0
     APPROVED = 1
     REJECTED = 2
 
@@ -19,6 +19,7 @@ class JoinStatus(graphene.Enum):
 
 
 class JoinInfo(ObjectType):
+    user_id = graphene.ID(required=True)
     agent_name = graphene.String(required=True)
     telegram = graphene.String(required=True)
     regions = graphene.List(graphene.String, required=True)
@@ -32,9 +33,10 @@ class JoinInfo(ObjectType):
         try:
             status = JoinStatus.get(data.get('status'))
         except ValueError:
-            status = JoinStatus.CREATED
+            status = JoinStatus.PENDING
 
         return cls(
+            user_id=data['user_id'],
             agent_name=data['agent_name'],
             telegram=data['telegram'],
             regions=data['regions'],

@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 from time import time
-import logging
 from bson.objectid import ObjectId
 from flask import request, abort
 from flask_graphql import GraphQLView
-from graphql.error.base import GraphQLError
+from traceback import print_exception
 from graphene import Schema
 from graphql.execution.executors.asyncio import AsyncioExecutor
 
@@ -97,11 +96,8 @@ class AuthenticatedView(GraphQLView):
 
     @staticmethod
     def format_error(error):
-        if isinstance(error, GraphQLError):
-            logging.error('Exception on %s [%s]' % (
-                request.path,
-                request.method
-            ), exc_info=error)
+        if isinstance(error, Exception):
+            print_exception(type(error), error, error.__traceback__)
 
         return GraphQLView.format_error(error)
 
