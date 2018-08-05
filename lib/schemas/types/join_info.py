@@ -1,6 +1,7 @@
 import graphene
 
 from .object import ObjectType
+from lib.helper import estr
 
 
 class JoinStatus(graphene.Enum):
@@ -25,6 +26,7 @@ class JoinInfo(ObjectType):
     regions = graphene.List(graphene.String, required=True)
     other = graphene.String(required=True)
     status = JoinStatus(required=True)
+    comment = graphene.String()
     created_at = graphene.String(required=True)
     updated_at = graphene.String(required=True)
 
@@ -42,6 +44,7 @@ class JoinInfo(ObjectType):
             regions=data['regions'],
             other=data['other'],
             status=status,
+            comment=estr(data.get('comment')),
             created_at=data['created_at'],
             updated_at=data['updated_at']
         )

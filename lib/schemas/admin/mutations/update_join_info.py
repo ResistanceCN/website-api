@@ -12,13 +12,16 @@ class UpdateJoinInfo(graphene.Mutation):
     class Arguments:
         user_id = graphene.ID(required=True)
         status = JoinStatus()
+        comment = graphene.String()
 
-    async def mutate(self, info, user_id, status=None):
+    async def mutate(self, info, user_id, status=None, comment=None):
         print(user_id)
 
         fields_set = {}
         if status is not None:
             fields_set['join_info.status'] = status
+        if comment is not None:
+            fields_set['join_info.comment'] = comment
 
         db().users.update_one({'_id': ObjectId(user_id)}, {
             '$set': fields_set,
