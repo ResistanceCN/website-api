@@ -27,6 +27,13 @@ class Join(graphene.Mutation):
         if agent_name == '' or telegram == '' or len(regions) == 0:
             raise Exception('Agent name, telegram username and regions must not be empty.')
 
+        if len(agent_name) > 16:
+            raise Exception('Agent name must not more than 16 characters.')
+        if len(telegram) > 40:
+            raise Exception('Telegram username must not more than 40 characters.')
+        if len(other) > 512:
+            raise Exception('Descriptions must not more than 512 characters.')
+
         user = db().users.find_one({'_id': me.id})
         now = datetime.now()
 
